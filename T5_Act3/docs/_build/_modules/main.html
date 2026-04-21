@@ -1,0 +1,359 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="es" data-content_root="../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>main &mdash; documentación de Monitor ISS - </title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=e2bb6099"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/translations.js?v=f85f4cfb"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Índice" href="../genindex.html" />
+    <link rel="search" title="Búsqueda" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Monitor ISS
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Buscar documentos" aria-label="Buscar documentos" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Monitor ISS</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Código de módulo</a></li>
+      <li class="breadcrumb-item active">main</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Código fuente para main</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">tkinter</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tk</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tkinter</span><span class="w"> </span><span class="kn">import</span> <span class="n">messagebox</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cProfile</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pstats</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+
+<span class="c1"># Variable global para almacenar el historial de datos y hacer los cálculos</span>
+<span class="n">historial_iss</span> <span class="o">=</span> <span class="p">[]</span>
+
+<div class="viewcode-block" id="fetch_iss_data">
+<a class="viewcode-back" href="../index.html#main.fetch_iss_data">[documentos]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">fetch_iss_data</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Obtiene los datos actuales de la Estación Espacial Internacional (ISS).</span>
+<span class="sd">    Si la red falla o está bloqueada por un firewall, genera datos simulados </span>
+<span class="sd">    para garantizar que la aplicación y la comparativa de rendimiento no se congelen.</span>
+
+<span class="sd">    Retorna:</span>
+<span class="sd">        dict: Un diccionario con los datos de altitud y velocidad.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://api.wheretheiss.at/v1/satellites/25544&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Bajamos el timeout a 2 segundos para evitar que Tkinter se quede bloqueado</span>
+        <span class="n">respuesta</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">respuesta</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">respuesta</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+        <span class="c1"># Imprimimos el fallo en la terminal como aviso para el desarrollador</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Aviso de red: No se pudo conectar a la API (</span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s2">). Usando datos de respaldo.&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># --- SISTEMA DE RESPALDO (MOCK DATA) ---</span>
+    <span class="c1"># Si la ejecución llega hasta aquí, significa que la API falló.</span>
+    <span class="c1"># Generamos datos con rangos realistas de la ISS.</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;altitude&quot;</span><span class="p">:</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">410.0</span><span class="p">,</span> <span class="mf">425.0</span><span class="p">),</span>
+        <span class="s2">&quot;velocity&quot;</span><span class="p">:</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">27500.0</span><span class="p">,</span> <span class="mf">27700.0</span><span class="p">)</span>
+    <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="process_unoptimized">
+<a class="viewcode-back" href="../index.html#main.process_unoptimized">[documentos]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">process_unoptimized</span><span class="p">(</span><span class="n">data_list</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calcula la altitud media y velocidad máxima del historial usando técnicas NO optimizadas.</span>
+<span class="sd">    Emplea bucles repetitivos y uso ineficiente de memoria al duplicar listas.</span>
+
+<span class="sd">    Parámetros:</span>
+<span class="sd">        data_list (list): Lista de diccionarios con el histórico de posiciones de la ISS.</span>
+
+<span class="sd">    Retorna:</span>
+<span class="sd">        tuple: Contiene dos valores numéricos (altitud_media, velocidad_maxima).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">data_list</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+        
+    <span class="n">altitudes</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1"># Bucle innecesario para extraer datos</span>
+    <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">data_list</span><span class="p">:</span>
+        <span class="n">altitudes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;altitude&#39;</span><span class="p">])</span>
+        
+    <span class="n">total_alt</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="c1"># Cálculo manual en lugar de usar sum()</span>
+    <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">altitudes</span><span class="p">:</span>
+        <span class="n">total_alt</span> <span class="o">=</span> <span class="n">total_alt</span> <span class="o">+</span> <span class="n">a</span>
+        
+    <span class="n">avg_alt</span> <span class="o">=</span> <span class="n">total_alt</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">altitudes</span><span class="p">)</span>
+    
+    <span class="n">max_vel</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="c1"># Bucle repetido sobre la misma estructura en lugar de hacerlo todo junto</span>
+    <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">data_list</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;velocity&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">max_vel</span><span class="p">:</span>
+            <span class="n">max_vel</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;velocity&#39;</span><span class="p">]</span>
+            
+    <span class="c1"># Simulamos un pequeño sobrecoste temporal extra por la ineficiencia</span>
+    <span class="n">lista_basura</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="o">*</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10000</span><span class="p">)]</span>
+            
+    <span class="k">return</span> <span class="n">avg_alt</span><span class="p">,</span> <span class="n">max_vel</span></div>
+
+
+<div class="viewcode-block" id="process_optimized">
+<a class="viewcode-back" href="../index.html#main.process_optimized">[documentos]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">process_optimized</span><span class="p">(</span><span class="n">data_list</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calcula la altitud media y velocidad máxima del historial usando técnicas optimizadas.</span>
+<span class="sd">    Emplea funciones nativas de C (sum, max) y generadores para no saturar la memoria.</span>
+
+<span class="sd">    Parámetros:</span>
+<span class="sd">        data_list (list): Lista de diccionarios con el histórico de posiciones de la ISS.</span>
+
+<span class="sd">    Retorna:</span>
+<span class="sd">        tuple: Contiene dos valores numéricos (altitud_media, velocidad_maxima).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">data_list</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+        
+    <span class="c1"># Uso de generadores y funciones integradas en una sola línea</span>
+    <span class="n">avg_alt</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;altitude&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">data_list</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">data_list</span><span class="p">)</span>
+    <span class="n">max_vel</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;velocity&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">data_list</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">avg_alt</span><span class="p">,</span> <span class="n">max_vel</span></div>
+
+
+<div class="viewcode-block" id="profile_function">
+<a class="viewcode-back" href="../index.html#main.profile_function">[documentos]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">profile_function</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Ejecuta una función bajo la supervisión de cProfile para extraer sus estadísticas de rendimiento.</span>
+
+<span class="sd">    Parámetros:</span>
+<span class="sd">        func (callable): La función que se va a evaluar.</span>
+<span class="sd">        *args: Argumentos posicionales que requiere la función.</span>
+
+<span class="sd">    Retorna:</span>
+<span class="sd">        tuple: (resultado_de_la_funcion, string_con_estadisticas_cprofile)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pr</span> <span class="o">=</span> <span class="n">cProfile</span><span class="o">.</span><span class="n">Profile</span><span class="p">()</span>
+    <span class="n">pr</span><span class="o">.</span><span class="n">enable</span><span class="p">()</span>
+    <span class="n">resultado</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+    <span class="n">pr</span><span class="o">.</span><span class="n">disable</span><span class="p">()</span>
+    
+    <span class="n">flujo_salida</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()</span>
+    <span class="n">ps</span> <span class="o">=</span> <span class="n">pstats</span><span class="o">.</span><span class="n">Stats</span><span class="p">(</span><span class="n">pr</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="n">flujo_salida</span><span class="p">)</span><span class="o">.</span><span class="n">sort_stats</span><span class="p">(</span><span class="s1">&#39;cumulative&#39;</span><span class="p">)</span>
+    <span class="n">ps</span><span class="o">.</span><span class="n">print_stats</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span> <span class="c1"># Extraemos solo el top 5 de líneas más lentas</span>
+    
+    <span class="k">return</span> <span class="n">resultado</span><span class="p">,</span> <span class="n">flujo_salida</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="SpaceApp">
+<a class="viewcode-back" href="../index.html#main.SpaceApp">[documentos]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SpaceApp</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Clase principal de la interfaz gráfica que controla los paneles de la aplicación y la actualización periódica.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">root</span> <span class="o">=</span> <span class="n">root</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Monitor ISS - Optimización vs Ineficiencia&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">geometry</span><span class="p">(</span><span class="s2">&quot;1100x600&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">bg</span><span class="o">=</span><span class="s2">&quot;#2e3440&quot;</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">construir_interfaz</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">actualizar_datos_periodicamente</span><span class="p">()</span>
+
+<div class="viewcode-block" id="SpaceApp.construir_interfaz">
+<a class="viewcode-back" href="../index.html#main.SpaceApp.construir_interfaz">[documentos]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">construir_interfaz</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construye la estructura visual dividiendo la ventana en un panel izquierdo y uno derecho.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># --- Contenedor Principal ---</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">main_frame</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Frame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="n">bg</span><span class="o">=</span><span class="s2">&quot;#2e3440&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">main_frame</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">fill</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">BOTH</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">padx</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">pady</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+        
+        <span class="c1"># --- Panel Izquierdo (NO Optimizado) ---</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">frame_izq</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Frame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">main_frame</span><span class="p">,</span> <span class="n">bg</span><span class="o">=</span><span class="s2">&quot;#bf616a&quot;</span><span class="p">,</span> <span class="n">bd</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">relief</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">SUNKEN</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">frame_izq</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">side</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">LEFT</span><span class="p">,</span> <span class="n">fill</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">BOTH</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">padx</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+        
+        <span class="n">tk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame_izq</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;❌ VERSIÓN NO OPTIMIZADA&quot;</span><span class="p">,</span> <span class="n">font</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Arial&quot;</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="s2">&quot;bold&quot;</span><span class="p">),</span> <span class="n">bg</span><span class="o">=</span><span class="s2">&quot;#bf616a&quot;</span><span class="p">,</span> <span class="n">fg</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">pady</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">lbl_hora_izq</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame_izq</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Última actualización: --:--:--&quot;</span><span class="p">,</span> <span class="n">bg</span><span class="o">=</span><span class="s2">&quot;#bf616a&quot;</span><span class="p">,</span> <span class="n">fg</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lbl_hora_izq</span><span class="o">.</span><span class="n">pack</span><span class="p">()</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">lbl_datos_izq</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame_izq</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Esperando datos...&quot;</span><span class="p">,</span> <span class="n">bg</span><span class="o">=</span><span class="s2">&quot;#bf616a&quot;</span><span class="p">,</span> <span class="n">fg</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">,</span> <span class="n">font</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Arial&quot;</span><span class="p">,</span> <span class="mi">12</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lbl_datos_izq</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">pady</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">lbl_tiempo_izq</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame_izq</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Tiempo ejecución: 0.0000s&quot;</span><span class="p">,</span> <span class="n">bg</span><span class="o">=</span><span class="s2">&quot;#bf616a&quot;</span><span class="p">,</span> <span class="n">fg</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">,</span> <span class="n">font</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Arial&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;bold&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lbl_tiempo_izq</span><span class="o">.</span><span class="n">pack</span><span class="p">()</span>
+        
+        <span class="n">tk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame_izq</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Análisis cProfile (Top 5 func):&quot;</span><span class="p">,</span> <span class="n">bg</span><span class="o">=</span><span class="s2">&quot;#bf616a&quot;</span><span class="p">,</span> <span class="n">fg</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">pady</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">txt_profile_izq</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Text</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame_izq</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">55</span><span class="p">,</span> <span class="n">bg</span><span class="o">=</span><span class="s2">&quot;#3b4252&quot;</span><span class="p">,</span> <span class="n">fg</span><span class="o">=</span><span class="s2">&quot;#eceff4&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">txt_profile_izq</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">padx</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">pady</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+        
+        <span class="n">tk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame_izq</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Help (Docstrings)&quot;</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">mostrar_help</span><span class="p">(</span><span class="n">process_unoptimized</span><span class="p">))</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">pady</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+        <span class="c1"># --- Panel Derecho (Optimizado) ---</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">frame_der</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Frame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">main_frame</span><span class="p">,</span> <span class="n">bg</span><span class="o">=</span><span class="s2">&quot;#a3be8c&quot;</span><span class="p">,</span> <span class="n">bd</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">relief</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">SUNKEN</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">frame_der</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">side</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">RIGHT</span><span class="p">,</span> <span class="n">fill</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">BOTH</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">padx</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+        
+        <span class="n">tk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame_der</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;✔ VERSIÓN OPTIMIZADA&quot;</span><span class="p">,</span> <span class="n">font</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Arial&quot;</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="s2">&quot;bold&quot;</span><span class="p">),</span> <span class="n">bg</span><span class="o">=</span><span class="s2">&quot;#a3be8c&quot;</span><span class="p">,</span> <span class="n">fg</span><span class="o">=</span><span class="s2">&quot;#2e3440&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">pady</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">lbl_hora_der</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame_der</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Última actualización: --:--:--&quot;</span><span class="p">,</span> <span class="n">bg</span><span class="o">=</span><span class="s2">&quot;#a3be8c&quot;</span><span class="p">,</span> <span class="n">fg</span><span class="o">=</span><span class="s2">&quot;#2e3440&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lbl_hora_der</span><span class="o">.</span><span class="n">pack</span><span class="p">()</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">lbl_datos_der</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame_der</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Esperando datos...&quot;</span><span class="p">,</span> <span class="n">bg</span><span class="o">=</span><span class="s2">&quot;#a3be8c&quot;</span><span class="p">,</span> <span class="n">fg</span><span class="o">=</span><span class="s2">&quot;#2e3440&quot;</span><span class="p">,</span> <span class="n">font</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Arial&quot;</span><span class="p">,</span> <span class="mi">12</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lbl_datos_der</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">pady</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">lbl_tiempo_der</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame_der</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Tiempo ejecución: 0.0000s&quot;</span><span class="p">,</span> <span class="n">bg</span><span class="o">=</span><span class="s2">&quot;#a3be8c&quot;</span><span class="p">,</span> <span class="n">fg</span><span class="o">=</span><span class="s2">&quot;#2e3440&quot;</span><span class="p">,</span> <span class="n">font</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Arial&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;bold&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lbl_tiempo_der</span><span class="o">.</span><span class="n">pack</span><span class="p">()</span>
+        
+        <span class="n">tk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame_der</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Análisis cProfile (Top 5 func):&quot;</span><span class="p">,</span> <span class="n">bg</span><span class="o">=</span><span class="s2">&quot;#a3be8c&quot;</span><span class="p">,</span> <span class="n">fg</span><span class="o">=</span><span class="s2">&quot;#2e3440&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">pady</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">txt_profile_der</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Text</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame_der</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">55</span><span class="p">,</span> <span class="n">bg</span><span class="o">=</span><span class="s2">&quot;#3b4252&quot;</span><span class="p">,</span> <span class="n">fg</span><span class="o">=</span><span class="s2">&quot;#eceff4&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">txt_profile_der</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">padx</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">pady</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+        
+        <span class="n">tk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame_der</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Help (Docstrings)&quot;</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">mostrar_help</span><span class="p">(</span><span class="n">process_optimized</span><span class="p">))</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">pady</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SpaceApp.mostrar_help">
+<a class="viewcode-back" href="../index.html#main.SpaceApp.mostrar_help">[documentos]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mostrar_help</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">funcion</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Abre una ventana emergente para mostrar la documentación oficial de la función indicada.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">docstring</span> <span class="o">=</span> <span class="n">funcion</span><span class="o">.</span><span class="vm">__doc__</span> <span class="k">if</span> <span class="n">funcion</span><span class="o">.</span><span class="vm">__doc__</span> <span class="k">else</span> <span class="s2">&quot;Sin documentación disponible.&quot;</span>
+        <span class="n">messagebox</span><span class="o">.</span><span class="n">showinfo</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Documentación: </span><span class="si">{</span><span class="n">funcion</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">docstring</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="SpaceApp.actualizar_datos_periodicamente">
+<a class="viewcode-back" href="../index.html#main.SpaceApp.actualizar_datos_periodicamente">[documentos]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">actualizar_datos_periodicamente</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Consulta la API de la ISS, procesa los datos en ambas versiones, actualiza la UI y</span>
+<span class="sd">        se programa a sí misma para volver a ejecutarse usando root.after.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">nuevo_dato</span> <span class="o">=</span> <span class="n">fetch_iss_data</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">nuevo_dato</span><span class="p">:</span>
+            <span class="n">historial_iss</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nuevo_dato</span><span class="p">)</span>
+            
+            <span class="n">hora_actual</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%H:%M:%S&quot;</span><span class="p">)</span>
+            
+            <span class="c1"># --- Ejecución NO optimizada ---</span>
+            <span class="n">inicio_izq</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+            <span class="p">(</span><span class="n">alt_media_izq</span><span class="p">,</span> <span class="n">vel_max_izq</span><span class="p">),</span> <span class="n">profile_izq</span> <span class="o">=</span> <span class="n">profile_function</span><span class="p">(</span><span class="n">process_unoptimized</span><span class="p">,</span> <span class="n">historial_iss</span><span class="p">)</span>
+            <span class="n">tiempo_total_izq</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">inicio_izq</span>
+            
+            <span class="c1"># --- Ejecución Optimizada ---</span>
+            <span class="n">inicio_der</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+            <span class="p">(</span><span class="n">alt_media_der</span><span class="p">,</span> <span class="n">vel_max_der</span><span class="p">),</span> <span class="n">profile_der</span> <span class="o">=</span> <span class="n">profile_function</span><span class="p">(</span><span class="n">process_optimized</span><span class="p">,</span> <span class="n">historial_iss</span><span class="p">)</span>
+            <span class="n">tiempo_total_der</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">inicio_der</span>
+            
+            <span class="c1"># --- Actualizar Textos UI Izquierda ---</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lbl_hora_izq</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Actualización: </span><span class="si">{</span><span class="n">hora_actual</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lbl_datos_izq</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Registros analizados: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">historial_iss</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">Altitud media: </span><span class="si">{</span><span class="n">alt_media_izq</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> km</span><span class="se">\n</span><span class="s2">Velocidad Max: </span><span class="si">{</span><span class="n">vel_max_izq</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> km/h&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lbl_tiempo_izq</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Tiempo ejecución: </span><span class="si">{</span><span class="n">tiempo_total_izq</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">txt_profile_izq</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s2">&quot;1.0&quot;</span><span class="p">,</span> <span class="n">tk</span><span class="o">.</span><span class="n">END</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">txt_profile_izq</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">tk</span><span class="o">.</span><span class="n">END</span><span class="p">,</span> <span class="n">profile_izq</span><span class="p">)</span>
+            
+            <span class="c1"># --- Actualizar Textos UI Derecha ---</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lbl_hora_der</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Actualización: </span><span class="si">{</span><span class="n">hora_actual</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lbl_datos_der</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Registros analizados: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">historial_iss</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">Altitud media: </span><span class="si">{</span><span class="n">alt_media_der</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> km</span><span class="se">\n</span><span class="s2">Velocidad Max: </span><span class="si">{</span><span class="n">vel_max_der</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> km/h&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lbl_tiempo_der</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Tiempo ejecución: </span><span class="si">{</span><span class="n">tiempo_total_der</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">txt_profile_der</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s2">&quot;1.0&quot;</span><span class="p">,</span> <span class="n">tk</span><span class="o">.</span><span class="n">END</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">txt_profile_der</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">tk</span><span class="o">.</span><span class="n">END</span><span class="p">,</span> <span class="n">profile_der</span><span class="p">)</span>
+
+        <span class="c1"># Reprogramar la ejecución de esta misma función dentro de 3 segundos (3000ms)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">after</span><span class="p">(</span><span class="mi">3000</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">actualizar_datos_periodicamente</span><span class="p">)</span></div>
+</div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c1"># Arrancamos la aplicación</span>
+    <span class="n">root</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Tk</span><span class="p">()</span>
+    <span class="n">app</span> <span class="o">=</span> <span class="n">SpaceApp</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
+    <span class="n">root</span><span class="o">.</span><span class="n">mainloop</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Derechos de autor 2026, Manuel Amado Rodriguez.</p>
+  </div>
+
+  Compilado con <a href="https://www.sphinx-doc.org/">Sphinx</a> usando un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">tema</a>
+    proporcionado por <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
